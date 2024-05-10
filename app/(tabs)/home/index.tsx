@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text, TextInput } from 'react-native';
+import {
+	StyleSheet,
+	View,
+	Text,
+	TextInput,
+	Button,
+	Pressable,
+} from 'react-native';
 import * as Location from 'expo-location';
 import { RNCamera } from 'react-native-camera';
 import { Link } from 'expo-router';
+import Input from '@/components/Input';
 
 export default function App() {
 	const [mapRegion, setMapRegion] = useState({
@@ -84,6 +92,9 @@ export default function App() {
 					onChangeText={(text) => setImageDescription(text)}
 					defaultValue="You can type in me"
 				/>
+			</View>
+			<View>
+				<Pressable>Share</Pressable>
 			</View>
 		</View>
 	);
