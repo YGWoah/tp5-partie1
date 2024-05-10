@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TextInput } from 'react-native';
 import * as Location from 'expo-location';
+import { RNCamera } from 'react-native-camera';
+import { Link } from 'expo-router';
 
 export default function App() {
 	const [mapRegion, setMapRegion] = useState({
@@ -13,7 +15,7 @@ export default function App() {
 
 	const [location, setLocation] = useState<Location.LocationObjectCoords>();
 	const [errorMsg, setErrorMsg] = useState('');
-
+	const [imageDescription, setImageDescription] = useState('');
 	useEffect(() => {
 		(async () => {
 			let { status } = await Location.requestForegroundPermissionsAsync();
@@ -25,6 +27,9 @@ export default function App() {
 			let location: Location.LocationObjectCoords = await (
 				await Location.getCurrentPositionAsync({})
 			).coords;
+			Location.watchPositionAsync({}, (location) => {
+				setLocation(location.coords);
+			});
 
 			setLocation(location);
 			setMapRegion({
@@ -52,7 +57,34 @@ export default function App() {
 			<View>
 				<Text style={styles.paragraph}>your location is :{text}</Text>
 			</View>
-			
+			{/* <View>
+				<RNCamera
+					style={{ flex: 1, alignItems: 'center' }}
+					type={RNCamera.Constants.Type.back}
+					flashMode={RNCamera.Constants.FlashMode.on}
+					androidCameraPermissionOptions={{
+						title: 'Permission to use camera',
+						message: 'We need your permission to use your camera',
+						buttonPositive: 'Ok',
+						buttonNegative: 'Cancel',
+					}}
+					
+					onGoogleVisionBarcodesDetected={({ barcodes }) => {
+						console.log(barcodes);
+					}}
+				/>
+			</View> */}
+			<View>
+				<Link href={'/home/camera'}>go to take a photo to share</Link>
+			</View>
+			<View>
+				<TextInput
+					style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+					placeholder="Type here to translate!"
+					onChangeText={(text) => setImageDescription(text)}
+					defaultValue="You can type in me"
+				/>
+			</View>
 		</View>
 	);
 }
