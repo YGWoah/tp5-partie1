@@ -7,6 +7,8 @@ import { ThemedView } from '@/components/ThemedView';
 import { Link, router } from 'expo-router';
 import { useEffect } from 'react';
 
+
+
 export default function HomeScreen() {
 	const navigateTologin = () => {
 		router.replace('/login');
