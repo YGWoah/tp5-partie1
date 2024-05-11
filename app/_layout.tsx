@@ -8,10 +8,10 @@ import { Slot, Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-
+import { PostsProvider } from '@/context/PostContext';
+import { PostProvider, PostsContext } from '@/context/SinglePostContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -26,7 +26,7 @@ export default function RootLayout() {
 	useEffect(() => {
 		if (loaded) {
 			SplashScreen.hideAsync();
-			navigateTologin();
+			// navigateTologin();
 		}
 	}, [loaded]);
 
@@ -35,8 +35,12 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-			<Slot />
-		</ThemeProvider>
+		<PostsProvider>
+			<PostProvider>
+				<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+					<Slot />
+				</ThemeProvider>
+			</PostProvider>
+		</PostsProvider>
 	);
 }

@@ -12,39 +12,53 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
+import { router } from 'expo-router';
+import { usePost } from '@/context/SinglePostContext';
+
+const PremisionNotGranted = (requestPermission: () => void) => (
+	<View style={styles.container}>
+		<Text style={{ textAlign: 'center' }}>
+			We need your permission to show the camera
+		</Text>
+		<Button onPress={requestPermission} title="grant permission" />
+	</View>
+);
 
 export default function App() {
 	const [facing, setFacing] = useState('back');
+	const [picture, setPicture] = useState('');
 	const [permission, requestPermission] = useCameraPermissions();
 	const cameraRef = useRef<CameraView>(null);
-
+	const { post, setPost } = usePost();
 	if (!permission) {
-		// Camera permissions are still loading.
 		return <View />;
 	}
 
 	if (!permission.granted) {
-		// Camera permissions are not granted yet.
-		return (
-			<View style={styles.container}>
-				<Text style={{ textAlign: 'center' }}>
-					We need your permission to show the camera
-				</Text>
-				<Button onPress={requestPermission} title="grant permission" />
-			</View>
-		);
+		return PremisionNotGranted(requestPermission);
 	}
 
-	async function savePicture() {
+	let goBack = () => {
+		router.navigate('/home/sharePost');
+	};
+	let savePicture = async () => {
 		if (cameraRef.current) {
 			const options = { quality: 0.5, base64: true };
 			const data: CameraCapturedPicture | undefined =
 				await cameraRef.current.takePictureAsync(options);
 			if (data) {
-				console.log(data.uri);
+				setPicture(data.uri);
+				setPost((current) => {
+					return {
+						...current,
+						uri: data.uri,
+					};
+				});
+				goBack();
+				console.log(JSON.stringify(post));
 			}
 		}
-	}
+	};
 
 	function toggleCameraFacing() {
 		setFacing((current) => (current === 'back' ? 'front' : 'back'));

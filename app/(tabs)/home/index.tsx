@@ -1,124 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import MapView, { Marker } from 'react-native-maps';
+import React from 'react';
+import { usePosts } from '@/context/PostContext';
 import {
-	StyleSheet,
 	View,
+	Image,
 	Text,
-	TextInput,
-	Button,
+	StyleSheet,
+	ScrollView,
 	Pressable,
 } from 'react-native';
-import * as Location from 'expo-location';
-import { RNCamera } from 'react-native-camera';
-import { Link } from 'expo-router';
-import Input from '@/components/Input';
+import { Link, router } from 'expo-router';
+// import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 
-export default function App() {
-	const [mapRegion, setMapRegion] = useState({
-		latitude: 33.67049627269136,
-		longitude: -7.379628725233621,
-		latitudeDelta: 0.0922,
-		longitudeDelta: 0.0421,
-	});
-
-	const [location, setLocation] = useState<Location.LocationObjectCoords>();
-	const [errorMsg, setErrorMsg] = useState('');
-	const [imageDescription, setImageDescription] = useState('');
-	useEffect(() => {
-		(async () => {
-			let { status } = await Location.requestForegroundPermissionsAsync();
-			if (status !== 'granted') {
-				setErrorMsg('Permission to access location was denied');
-				return;
-			}
-
-			let location: Location.LocationObjectCoords = await (
-				await Location.getCurrentPositionAsync({})
-			).coords;
-			Location.watchPositionAsync({}, (location) => {
-				setLocation(location.coords);
-			});
-
-			setLocation(location);
-			setMapRegion({
-				latitude: location.latitude,
-				longitude: location.longitude,
-				latitudeDelta: 0.0922,
-				longitudeDelta: 0.0421,
-			});
-		})();
-	}, []);
-
-	let text = 'Waiting..';
-	if (errorMsg) {
-		text = errorMsg;
-	} else if (location) {
-		text = JSON.stringify(location.latitude);
-		text = location.latitude + ' ' + location.longitude;
-	}
-
+const Posts = () => {
+	const { posts } = usePosts();
 	return (
-		<View style={styles.container}>
-			<MapView style={styles.map} region={mapRegion}>
-				<Marker coordinate={mapRegion} title="Marker" />
-			</MapView>
+		<ScrollView
+			contentContainerStyle={{
+				alignItems: 'center',
+			}}
+		>
+			{posts.map((post, index) => (
+				<View key={index} style={styles.postContainer}>
+					<Image
+						style={styles.image}
+						source={{ uri: post.uri }}
+						// alt={post.description}
+						onError={(e) => {
+							console.log('error', e);
+						}}
+					/>
+					<Text style={styles.description}>{post.description}</Text>
+					<Text style={styles.location}>
+						{post.location.latitude}, {post.location.longitude}
+					</Text>
+				</View>
+			))}
+		</ScrollView>
+	);
+};
+
+const PostPage = () => {
+	const { posts } = usePosts();
+	console.log('posts', posts);
+	return (
+		<View
+			style={{
+				flex: 1,
+				justifyContent: 'center',
+				alignItems: 'center',
+				padding: 20,
+				paddingTop: 50,
+			}}
+		>
 			<View>
-				<Text style={styles.paragraph}>your location is :{text}</Text>
-			</View>
-			{/* <View>
-				<RNCamera
-					style={{ flex: 1, alignItems: 'center' }}
-					type={RNCamera.Constants.Type.back}
-					flashMode={RNCamera.Constants.FlashMode.on}
-					androidCameraPermissionOptions={{
-						title: 'Permission to use camera',
-						message: 'We need your permission to use your camera',
-						buttonPositive: 'Ok',
-						buttonNegative: 'Cancel',
+				<Text
+					style={{
+						fontSize: 24,
+						fontWeight: 'bold',
 					}}
-					
-					onGoogleVisionBarcodesDetected={({ barcodes }) => {
-						console.log(barcodes);
+				>
+					Posts
+				</Text>
+				<Pressable
+					onPress={() => {
+						router.replace('/home/camera');
 					}}
-				/>
-			</View> */}
-			<View>
-				<Link href={'/home/camera'}>go to take a photo to share</Link>
+				>
+					<Text
+						style={{
+							color: 'blue',
+							textDecorationLine: 'underline',
+						}}
+					>
+						Post a Place
+					</Text>
+				</Pressable>
 			</View>
-			<View>
-				<TextInput
-					style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-					placeholder="Type here to translate!"
-					onChangeText={(text) => setImageDescription(text)}
-					defaultValue="You can type in me"
-				/>
-			</View>
-			<View>
-				<Pressable>Share</Pressable>
-			</View>
+			{posts.length > 0 ? (
+				<Posts />
+			) : (
+				<View
+					style={{
+						flex: 1,
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
+					<Text
+						style={{
+							fontSize: 24,
+							fontWeight: 'bold',
+						}}
+					>
+						No posts yet ...
+					</Text>
+					<Link href="/home/camera">
+						<Text
+							style={{
+								color: 'blue',
+								textDecorationLine: 'underline',
+							}}
+						>
+							Take a picture
+						</Text>
+					</Link>
+				</View>
+			)}
 		</View>
 	);
-}
+};
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		borderRadius: 10,
+	postContainer: {
+		marginBottom: 10,
 	},
-	map: {
-		width: '80%',
-		height: '50%',
+	image: {
+		width: 400,
+		height: 400,
 	},
-	containerd2: {
-		flex: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-		padding: 20,
+	description: {
+		fontSize: 16,
+		marginTop: 5,
 	},
-	paragraph: {
-		fontSize: 18,
-		textAlign: 'center',
+	location: {
+		fontSize: 12,
+		color: 'gray',
 	},
 });
+
+export default PostPage;

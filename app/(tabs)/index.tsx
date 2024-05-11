@@ -27,7 +27,6 @@ export default function HomeScreen() {
 			<Text>Welcome home baby god loves you</Text>
 			<View
 				style={{
-					flex: 1,
 					justifyContent: 'center',
 					alignItems: 'center',
 				}}
